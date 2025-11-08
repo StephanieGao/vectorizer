@@ -29,6 +29,17 @@
         <div class="result">
           <h3>Matrix Output</h3>
           <pre><code>{{ image_output }}</code></pre>
+          <div class="result-actions">
+            <form method="post" class="plot-inline-form">
+              <input type="hidden" name="mode" value="plot" />
+              <textarea name="matrix_text" class="sr-only" aria-hidden="true">{{ image_output }}</textarea>
+              <input type="hidden" name="plot_title" value="Before Levitt" />
+              <input type="hidden" name="plot_cmap" value="gray" />
+              <input type="hidden" name="plot_vmin" value="0" />
+              <input type="hidden" name="plot_vmax" value="255" />
+              <button type="submit">Plot this matrix</button>
+            </form>
+          </div>
         </div>
         {% endif %}
       </section>
@@ -69,9 +80,75 @@
             <details>
               <summary>{{ frame.label }}</summary>
               <pre><code>{{ frame.matrix }}</code></pre>
+              <div class="result-actions">
+                <form method="post" class="plot-inline-form">
+                  <input type="hidden" name="mode" value="plot" />
+                  <textarea name="matrix_text" class="sr-only" aria-hidden="true">{{ frame.matrix }}</textarea>
+                  <input type="hidden" name="plot_title" value="{{ frame.label }}" />
+                  <input type="hidden" name="plot_cmap" value="gray" />
+                  <input type="hidden" name="plot_vmin" value="0" />
+                  <input type="hidden" name="plot_vmax" value="255" />
+                  <button type="submit">Plot this matrix</button>
+                </form>
+              </div>
             </details>
             {% endfor %}
           </div>
+        </div>
+        {% endif %}
+      </section>
+
+      <section class="card">
+        <h2>Matrix Plotter</h2>
+        <p class="hint">Paste any Sage-style matrix (e.g. the output above) and preview it using a grayscale colormap.</p>
+        <form method="post" class="upload-form">
+          <input type="hidden" name="mode" value="plot" />
+          <label for="matrix_text">Matrix values</label>
+          <textarea
+            id="matrix_text"
+            name="matrix_text"
+            class="matrix-textarea"
+            placeholder="M = matrix([ ... ])"
+            required
+          >{{ plot_form.matrix_text }}</textarea>
+
+          <div class="form-grid">
+            <label>
+              Title
+              <input type="text" name="plot_title" value="{{ plot_form.plot_title }}" />
+            </label>
+            <label>
+              Colormap
+              <select name="plot_cmap">
+                {% for value, label in plot_cmaps %}
+                <option value="{{ value }}" {% if value == plot_form.plot_cmap %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <label>
+              Min (vmin)
+              <input type="number" step="any" name="plot_vmin" value="{{ plot_form.plot_vmin }}" />
+              <span class="hint">Leave blank to auto-detect</span>
+            </label>
+            <label>
+              Max (vmax)
+              <input type="number" step="any" name="plot_vmax" value="{{ plot_form.plot_vmax }}" />
+              <span class="hint">Leave blank to auto-detect</span>
+            </label>
+          </div>
+
+          <button type="submit">Plot Matrix</button>
+        </form>
+
+        {% if plot_error %}
+        <p class="feedback error">{{ plot_error }}</p>
+        {% endif %}
+
+        {% if plot_result %}
+        <div class="result plot-preview">
+          <h3>{{ plot_result.title }}</h3>
+          <img src="{{ plot_result.data_url }}" alt="Matrix plot preview" class="plot-image" />
+          <a class="download-link" href="{{ plot_result.data_url }}" download="matrix-plot.png">Download PNG</a>
         </div>
         {% endif %}
       </section>
